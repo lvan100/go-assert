@@ -17,22 +17,62 @@
 package assert
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
+	"regexp"
 	"strings"
+
+	"github.com/lvan100/go-assert/internal"
 )
 
 // StringAssertion assertion for type string.
 type StringAssertion struct {
-	t T
+	t internal.T
 	v string
 }
 
 // String returns an assertion for type string.
-func String(t T, v string) *StringAssertion {
+func String(t internal.T, v string) *StringAssertion {
 	return &StringAssertion{
 		t: t,
 		v: v,
 	}
+}
+
+// JsonEqual assertion failed when got and expect are not `json equal`.
+func (a *StringAssertion) JsonEqual(expect string, msg ...string) {
+	a.t.Helper()
+	var gotJson interface{}
+	if err := json.Unmarshal([]byte(a.v), &gotJson); err != nil {
+		fail(a.t, err.Error(), msg...)
+		return
+	}
+	var expectJson interface{}
+	if err := json.Unmarshal([]byte(expect), &expectJson); err != nil {
+		fail(a.t, err.Error(), msg...)
+		return
+	}
+	if !reflect.DeepEqual(gotJson, expectJson) {
+		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
+	}
+}
+
+func matches(t internal.T, got string, expr string, msg ...string) {
+	t.Helper()
+	if ok, err := regexp.MatchString(expr, got); err != nil {
+		fail(t, "invalid pattern", msg...)
+	} else if !ok {
+		str := fmt.Sprintf("got %q which does not match %q", got, expr)
+		fail(t, str, msg...)
+	}
+}
+
+// Matches assertion failed when got doesn't match expr expression.
+func (a *StringAssertion) Matches(expr string, msg ...string) {
+	a.t.Helper()
+	matches(a.t, a.v, expr, msg...)
 }
 
 // EqualFold assertion failed when v doesn't equal to `s` under Unicode case-folding.
