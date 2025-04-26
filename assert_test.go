@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"testing"
 
 	"github.com/lvan100/go-assert"
@@ -111,7 +112,41 @@ func TestNotNil(t *testing.T) {
 	})
 }
 
-func TestEqual(t *testing.T) {
+func TestPanic(t *testing.T) {
+	runCase(t, func(g *internal.MockT) {
+		assert.Panic(g, func() { panic("this is an error") }, "an error")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"did not panic"})
+		assert.Panic(g, func() {}, "an error")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"invalid pattern"})
+		assert.Panic(g, func() { panic("this is an error") }, "an error \\")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
+		assert.Panic(g, func() { panic("there's no error") }, "an error")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\", param (index=0)"})
+		assert.Panic(g, func() { panic("there's no error") }, "an error", "param (index=0)")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
+		assert.Panic(g, func() { panic(errors.New("there's no error")) }, "an error")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
+		assert.Panic(g, func() { panic(bytes.NewBufferString("there's no error")) }, "an error")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got \"[there's no error]\" which does not match \"an error\""})
+		assert.Panic(g, func() { panic([]string{"there's no error"}) }, "an error")
+	})
+}
+
+func TestThat_Equal(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, 0).Equal(0)
 	})
@@ -151,7 +186,7 @@ func TestEqual(t *testing.T) {
 	})
 }
 
-func TestNotEqual(t *testing.T) {
+func TestThat_NotEqual(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, "0").NotEqual(0)
 	})
@@ -169,7 +204,7 @@ func TestNotEqual(t *testing.T) {
 	})
 }
 
-func TestSame(t *testing.T) {
+func TestThat_Same(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, "0").Same("0")
 	})
@@ -183,7 +218,7 @@ func TestSame(t *testing.T) {
 	})
 }
 
-func TestNotSame(t *testing.T) {
+func TestThat_NotSame(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, "0").NotSame(0)
 	})
@@ -197,67 +232,7 @@ func TestNotSame(t *testing.T) {
 	})
 }
 
-func TestPanic(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		assert.Panic(g, func() { panic("this is an error") }, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"did not panic"})
-		assert.Panic(g, func() {}, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"invalid pattern"})
-		assert.Panic(g, func() { panic("this is an error") }, "an error \\")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
-		assert.Panic(g, func() { panic("there's no error") }, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\", param (index=0)"})
-		assert.Panic(g, func() { panic("there's no error") }, "an error", "param (index=0)")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
-		assert.Panic(g, func() { panic(errors.New("there's no error")) }, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
-		assert.Panic(g, func() { panic(bytes.NewBufferString("there's no error")) }, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"[there's no error]\" which does not match \"an error\""})
-		assert.Panic(g, func() { panic([]string{"there's no error"}) }, "an error")
-	})
-}
-
-func TestError(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		assert.Error(g, errors.New("this is an error"), "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"invalid pattern"})
-		assert.Error(g, errors.New("there's no error"), "an error \\")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"expect not nil error"})
-		assert.Error(g, nil, "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"expect not nil error, param (index=0)"})
-		assert.Error(g, nil, "an error", "param (index=0)")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\""})
-		assert.Error(g, errors.New("there's no error"), "an error")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\", param (index=0)"})
-		assert.Error(g, errors.New("there's no error"), "an error", "param (index=0)")
-	})
-}
-
-func TestTypeOf(t *testing.T) {
+func TestThat_TypeOf(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, new(int)).TypeOf((*int)(nil))
 	})
@@ -267,7 +242,7 @@ func TestTypeOf(t *testing.T) {
 	})
 }
 
-func TestImplements(t *testing.T) {
+func TestThat_Implements(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, errors.New("error")).Implements((*error)(nil))
 	})
@@ -281,27 +256,47 @@ func TestImplements(t *testing.T) {
 	})
 }
 
-type Tree struct{}
-
-func (t *Tree) Has(key string) bool {
-	return key == "1"
+type Tree struct {
+	Keys []string
 }
 
-func TestHas(t *testing.T) {
+func (t *Tree) Has(key string) bool {
+	return slices.Contains(t.Keys, key)
+}
+
+func (t *Tree) Contains(key string) bool {
+	return slices.Contains(t.Keys, key)
+}
+
+func TestThat_Has(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"method 'Has' not found on type int"})
 		assert.That(g, 1).Has("1")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got (*assert_test.Tree) &{} not has (string) 2"})
+		g.EXPECT().Error([]interface{}{"got (*assert_test.Tree) &{[]} not has (string) 2"})
 		assert.That(g, &Tree{}).Has("2")
 	})
 	runCase(t, func(g *internal.MockT) {
-		assert.That(g, &Tree{}).Has("1")
+		assert.That(g, &Tree{Keys: []string{"1"}}).Has("1")
 	})
 }
 
-func TestInSlice(t *testing.T) {
+func TestThat_Contains(t *testing.T) {
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"method 'Contains' not found on type int"})
+		assert.That(g, 1).Contains("1")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"got (*assert_test.Tree) &{[]} not contains (string) 2"})
+		assert.That(g, &Tree{}).Contains("2")
+	})
+	runCase(t, func(g *internal.MockT) {
+		assert.That(g, &Tree{Keys: []string{"1"}}).Contains("1")
+	})
+}
+
+func TestThat_InSlice(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"unsupported expect value (string) 1"})
 		assert.That(g, 1).InSlice("1")
@@ -320,7 +315,7 @@ func TestInSlice(t *testing.T) {
 	})
 }
 
-func TestNotInSlice(t *testing.T) {
+func TestThat_NotInSlice(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"unsupported expect value (string) 1"})
 		assert.That(g, 1).NotInSlice("1")
@@ -338,7 +333,7 @@ func TestNotInSlice(t *testing.T) {
 	})
 }
 
-func TestSubInSlice(t *testing.T) {
+func TestThat_SubInSlice(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"unsupported got value (int) 1"})
 		assert.That(g, 1).SubInSlice("1")
@@ -361,7 +356,7 @@ func TestSubInSlice(t *testing.T) {
 	})
 }
 
-func TestInMapKeys(t *testing.T) {
+func TestThat_InMapKeys(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"unsupported expect value (string) 1"})
 		assert.That(g, 1).InMapKeys("1")
@@ -376,7 +371,7 @@ func TestInMapKeys(t *testing.T) {
 	})
 }
 
-func TestInMapValues(t *testing.T) {
+func TestThat_InMapValues(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"unsupported expect value (string) 1"})
 		assert.That(g, 1).InMapValues("1")

@@ -105,16 +105,6 @@ func recovery(fn func()) (str string) {
 	return "<<SUCCESS>>"
 }
 
-// Error assertion failed when got `error` doesn't match expr expression.
-func Error(t internal.T, got error, expr string, msg ...string) {
-	t.Helper()
-	if got == nil {
-		fail(t, "expect not nil error", msg...)
-		return
-	}
-	matches(t, got.Error(), expr, msg...)
-}
-
 // ThatAssertion assertion for type any.
 type ThatAssertion struct {
 	t internal.T
@@ -216,6 +206,24 @@ func (a *ThatAssertion) Has(expect interface{}, msg ...string) {
 	ret := m.Call([]reflect.Value{reflect.ValueOf(expect)})
 	if !ret[0].Bool() {
 		str := fmt.Sprintf("got (%T) %v not has (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
+	}
+}
+
+// Contains assertion failed when got is not has expect.
+func (a *ThatAssertion) Contains(expect interface{}, msg ...string) {
+	a.t.Helper()
+
+	m := reflect.ValueOf(a.v).MethodByName("Contains")
+	if !m.IsValid() {
+		str := fmt.Sprintf("method 'Contains' not found on type %T", a.v)
+		fail(a.t, str, msg...)
+		return
+	}
+
+	ret := m.Call([]reflect.Value{reflect.ValueOf(expect)})
+	if !ret[0].Bool() {
+		str := fmt.Sprintf("got (%T) %v not contains (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
 	}
 }
