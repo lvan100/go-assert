@@ -26,13 +26,13 @@ import (
 	"github.com/lvan100/go-assert/internal"
 )
 
-// StringAssertion assertion for type string.
+// StringAssertion encapsulates a string value and a test handler for making assertions on the string.
 type StringAssertion struct {
 	t internal.T
 	v string
 }
 
-// ThatString returns an assertion for type string.
+// ThatString returns a StringAssertion for the given testing object and string value.
 func ThatString(t internal.T, v string) *StringAssertion {
 	return &StringAssertion{
 		t: t,
@@ -40,25 +40,27 @@ func ThatString(t internal.T, v string) *StringAssertion {
 	}
 }
 
-// Equal assertion failed when got and expect are not `deeply equal`.
+// Equal reports a test failure if the actual string is not equal to the expected string.
 func (a *StringAssertion) Equal(expect string, msg ...string) {
 	a.t.Helper()
-	if !reflect.DeepEqual(a.v, expect) {
+	if a.v != expect {
 		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
 	}
 }
 
-// NotEqual assertion failed when got and expect are `deeply equal`.
+// NotEqual reports a test failure if the actual string is equal to the given string.
 func (a *StringAssertion) NotEqual(expect string, msg ...string) {
 	a.t.Helper()
-	if reflect.DeepEqual(a.v, expect) {
+	if a.v == expect {
 		str := fmt.Sprintf("got (%T) %v but expect not (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
 	}
 }
 
-// JsonEqual assertion failed when got and expect are not `json equal`.
+// JsonEqual unmarshals both the actual and expected JSON strings into generic interfaces,
+// then reports a test failure if their resulting structures are not deeply equal.
+// If either string is invalid JSON, the test will fail with the unmarshal error.
 func (a *StringAssertion) JsonEqual(expect string, msg ...string) {
 	a.t.Helper()
 	var gotJson interface{}
@@ -87,13 +89,14 @@ func matches(t internal.T, got string, expr string, msg ...string) {
 	}
 }
 
-// Matches assertion failed when got doesn't match expr expression.
+// Matches reports a test failure if the actual string does not match the given regular expression.
 func (a *StringAssertion) Matches(expr string, msg ...string) {
 	a.t.Helper()
 	matches(a.t, a.v, expr, msg...)
 }
 
-// EqualFold assertion failed when v doesn't equal to `s` under Unicode case-folding.
+// EqualFold reports a test failure if the actual string and the given string
+// are not equal under Unicode case-folding.
 func (a *StringAssertion) EqualFold(s string, msg ...string) {
 	a.t.Helper()
 	if !strings.EqualFold(a.v, s) {
@@ -101,7 +104,7 @@ func (a *StringAssertion) EqualFold(s string, msg ...string) {
 	}
 }
 
-// HasPrefix assertion failed when v doesn't have prefix `prefix`.
+// HasPrefix fails the test if the actual string does not start with the specified prefix.
 func (a *StringAssertion) HasPrefix(prefix string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if !strings.HasPrefix(a.v, prefix) {
@@ -110,7 +113,7 @@ func (a *StringAssertion) HasPrefix(prefix string, msg ...string) *StringAsserti
 	return a
 }
 
-// HasSuffix assertion failed when v doesn't have suffix `suffix`.
+// HasSuffix fails the test if the actual string does not end with the specified suffix.
 func (a *StringAssertion) HasSuffix(suffix string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if !strings.HasSuffix(a.v, suffix) {
@@ -119,7 +122,7 @@ func (a *StringAssertion) HasSuffix(suffix string, msg ...string) *StringAsserti
 	return a
 }
 
-// Contains assertion failed when v doesn't contain substring `substr`.
+// Contains fails the test if the actual string does not contain the specified substring.
 func (a *StringAssertion) Contains(substr string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if !strings.Contains(a.v, substr) {

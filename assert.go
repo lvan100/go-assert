@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-// Package assert provides some useful assertion methods.
+// Package assert provides assertion helpers for testing,
+// offering both functional and fluent assertion styles.
 package assert
 
 import (
@@ -31,7 +32,7 @@ func fail(t internal.T, str string, msg ...string) {
 	t.Error(strings.Join(args, ", "))
 }
 
-// True assertion failed when got is false.
+// True asserts that got is true. It reports an error if the value is false.
 func True(t internal.T, got bool, msg ...string) {
 	t.Helper()
 	if !got {
@@ -39,7 +40,7 @@ func True(t internal.T, got bool, msg ...string) {
 	}
 }
 
-// False assertion failed when got is true.
+// False asserts that got is false. It reports an error if the value is true.
 func False(t internal.T, got bool, msg ...string) {
 	t.Helper()
 	if got {
@@ -47,7 +48,6 @@ func False(t internal.T, got bool, msg ...string) {
 	}
 }
 
-// isNil reports v is nil, but will not panic.
 func isNil(v reflect.Value) bool {
 	switch v.Kind() {
 	case reflect.Chan,
@@ -63,7 +63,7 @@ func isNil(v reflect.Value) bool {
 	}
 }
 
-// Nil assertion failed when got is not nil.
+// Nil asserts that got is nil. It reports an error if the value is not nil.
 func Nil(t internal.T, got interface{}, msg ...string) {
 	t.Helper()
 	// Why can't we use got==nil to judge？Because if
@@ -76,7 +76,7 @@ func Nil(t internal.T, got interface{}, msg ...string) {
 	}
 }
 
-// NotNil assertion failed when got is nil.
+// NotNil asserts that got is not nil. It reports an error if the value is nil.
 func NotNil(t internal.T, got interface{}, msg ...string) {
 	t.Helper()
 	if isNil(reflect.ValueOf(got)) {
@@ -84,7 +84,8 @@ func NotNil(t internal.T, got interface{}, msg ...string) {
 	}
 }
 
-// Panic assertion failed when fn doesn't panic or not match expr expression.
+// Panic asserts that fn panics and the panic message matches expr.
+// It reports an error if fn does not panic or if the recovered message does not satisfy expr.
 func Panic(t internal.T, fn func(), expr string, msg ...string) {
 	t.Helper()
 	str := recovery(fn)
@@ -105,13 +106,13 @@ func recovery(fn func()) (str string) {
 	return "<<SUCCESS>>"
 }
 
-// ThatAssertion assertion for type any.
+// ThatAssertion wraps a test context and a value for fluent assertions.
 type ThatAssertion struct {
 	t internal.T
 	v interface{}
 }
 
-// That returns an assertion for type any.
+// That creates a ThatAssertion for the given value v and test context t.
 func That(t internal.T, v interface{}) *ThatAssertion {
 	return &ThatAssertion{
 		t: t,
@@ -119,7 +120,8 @@ func That(t internal.T, v interface{}) *ThatAssertion {
 	}
 }
 
-// Equal assertion failed when got and expect are not `deeply equal`.
+// Equal asserts that the wrapped value v is deeply equal to expect.
+// It reports an error if the values are not deeply equal.
 func (a *ThatAssertion) Equal(expect interface{}, msg ...string) {
 	a.t.Helper()
 	if !reflect.DeepEqual(a.v, expect) {
@@ -128,7 +130,8 @@ func (a *ThatAssertion) Equal(expect interface{}, msg ...string) {
 	}
 }
 
-// NotEqual assertion failed when got and expect are `deeply equal`.
+// NotEqual asserts that the wrapped value v is not deeply equal to expect.
+// It reports an error if the values are deeply equal.
 func (a *ThatAssertion) NotEqual(expect interface{}, msg ...string) {
 	a.t.Helper()
 	if reflect.DeepEqual(a.v, expect) {
@@ -137,7 +140,8 @@ func (a *ThatAssertion) NotEqual(expect interface{}, msg ...string) {
 	}
 }
 
-// Same assertion failed when got and expect are not same.
+// Same asserts that the wrapped value v and expect are the same (using Go ==).
+// It reports an error if v != expect.
 func (a *ThatAssertion) Same(expect interface{}, msg ...string) {
 	a.t.Helper()
 	if a.v != expect {
@@ -146,7 +150,8 @@ func (a *ThatAssertion) Same(expect interface{}, msg ...string) {
 	}
 }
 
-// NotSame assertion failed when got and expect are same.
+// NotSame asserts that the wrapped value v and expect are not the same (using Go !=).
+// It reports an error if v == expect.
 func (a *ThatAssertion) NotSame(expect interface{}, msg ...string) {
 	a.t.Helper()
 	if a.v == expect {
@@ -155,7 +160,9 @@ func (a *ThatAssertion) NotSame(expect interface{}, msg ...string) {
 	}
 }
 
-// TypeOf assertion failed when got and expect are not same type.
+// TypeOf asserts that the type of the wrapped value v is assignable to the type of expect.
+// It supports pointer to interface types.
+// It reports an error if the types are not assignable.
 func (a *ThatAssertion) TypeOf(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -171,7 +178,9 @@ func (a *ThatAssertion) TypeOf(expect interface{}, msg ...string) {
 	}
 }
 
-// Implements assertion failed when got doesn't implement expect.
+// Implements asserts that the type of the wrapped value v implements the interface type of expect.
+// The expect parameter must be an interface or pointer to interface.
+// It reports an error if v does not implement the interface.
 func (a *ThatAssertion) Implements(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -192,7 +201,8 @@ func (a *ThatAssertion) Implements(expect interface{}, msg ...string) {
 	}
 }
 
-// Has assertion failed when got is not has expect.
+// Has asserts that the wrapped value v has a method named 'Has' that returns true when passed expect.
+// It reports an error if the method does not exist or returns false.
 func (a *ThatAssertion) Has(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -210,7 +220,8 @@ func (a *ThatAssertion) Has(expect interface{}, msg ...string) {
 	}
 }
 
-// Contains assertion failed when got is not has expect.
+// Contains asserts that the wrapped value v has a method named 'Contains' that returns true when passed expect.
+// It reports an error if the method does not exist or returns false.
 func (a *ThatAssertion) Contains(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -228,7 +239,8 @@ func (a *ThatAssertion) Contains(expect interface{}, msg ...string) {
 	}
 }
 
-// InSlice assertion failed when got is not in expect array & slice.
+// InSlice asserts that the wrapped value v is present in the provided slice or array.
+// It reports an error if expect is not a slice/array or if v is not found.
 func (a *ThatAssertion) InSlice(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -249,7 +261,8 @@ func (a *ThatAssertion) InSlice(expect interface{}, msg ...string) {
 	fail(a.t, str, msg...)
 }
 
-// NotInSlice assertion failed when got is in expect array & slice.
+// NotInSlice asserts that the wrapped value v is not present in the provided slice or array.
+// It reports an error if expect is not a slice/array, if types do not match, or if v is found.
 func (a *ThatAssertion) NotInSlice(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -276,7 +289,9 @@ func (a *ThatAssertion) NotInSlice(expect interface{}, msg ...string) {
 	}
 }
 
-// SubInSlice assertion failed when got is not sub in expect array & slice.
+// SubInSlice asserts that the assertion’s value appears at least once within the provided slice or array.
+// It fails the test if either the actual value or expected value is not a slice/array,
+// or if no matching element is found.
 func (a *ThatAssertion) SubInSlice(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -306,7 +321,9 @@ func (a *ThatAssertion) SubInSlice(expect interface{}, msg ...string) {
 	fail(a.t, str, msg...)
 }
 
-// InMapKeys assertion failed when got is not in keys of expect map.
+// InMapKeys asserts that the assertion’s value is one of the keys in the provided map.
+// It fails the test if the expected value is not a map or if the actual value
+// does not match any key in the map.
 func (a *ThatAssertion) InMapKeys(expect interface{}, msg ...string) {
 	a.t.Helper()
 
@@ -327,14 +344,17 @@ func (a *ThatAssertion) InMapKeys(expect interface{}, msg ...string) {
 	fail(a.t, str, msg...)
 }
 
-// InMapValues assertion failed when got is not in values of expect map.
+// InMapValues asserts that the assertion’s value is one of the values in the provided map.
+// It fails the test if the expected value is not a map or if the actual value
+// does not match any value in the map.
 func (a *ThatAssertion) InMapValues(expect interface{}, msg ...string) {
 	a.t.Helper()
 
 	switch v := reflect.ValueOf(expect); v.Kind() {
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
-			if reflect.DeepEqual(a.v, v.MapIndex(key).Interface()) {
+			val := v.MapIndex(key).Interface()
+			if reflect.DeepEqual(a.v, val) {
 				return
 			}
 		}

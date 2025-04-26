@@ -20,13 +20,14 @@ import (
 	"github.com/lvan100/go-assert/internal"
 )
 
-// ErrorAssertion assertion for type string.
+// ErrorAssertion provides assertion methods for values of type error.
+// It is used to perform validations on error values in test cases.
 type ErrorAssertion struct {
 	t internal.T
 	v error
 }
 
-// ThatError returns an assertion for type string.
+// ThatError returns a new ErrorAssertion for the given error value.
 func ThatError(t internal.T, v error) *ErrorAssertion {
 	return &ErrorAssertion{
 		t: t,
@@ -34,7 +35,9 @@ func ThatError(t internal.T, v error) *ErrorAssertion {
 	}
 }
 
-// Matches assertion failed when got doesn't match expr expression.
+// Matches reports a test failure if the error string does not match the given expression.
+// It expects a non-nil error and uses the provided expression (typically a regex)
+// to validate the error message content. Optional custom failure messages can be provided.
 func (a *ErrorAssertion) Matches(expr string, msg ...string) {
 	a.t.Helper()
 	if a.v == nil {
