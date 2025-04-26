@@ -2,8 +2,6 @@
 
 **go-assert** 是一个简洁、高效且可读性极强的 Go 单元测试断言库，旨在帮助开发者编写更健壮、自然流畅的测试代码。
 
----
-
 ## ✨ 特性亮点
 
 - 💬 **自然语言风格**：`That(got).Equal(expect)` 更易读、更易懂
@@ -11,15 +9,11 @@
 - ⚡ **高性能实现**：泛型支持，避免过度反射带来的性能损耗
 - ✅ **丰富断言能力**：涵盖常用断言类型，满足大多数测试场景
 
----
-
 ## 📦 安装方式
 
 ```bash
 go get github.com/lvan100/go-assert
 ```
-
----
 
 ## 🤔 为什么选择 go-assert？
 
@@ -27,8 +21,6 @@ go get github.com/lvan100/go-assert
 **go-assert** 通过自然语言风格的 API 设计消除了这种困扰，让测试代码更易于理解和维护。
 
 此外，它还借鉴了多个优秀库的优点，并以更现代的方式实现，比如泛型支持、低反射开销等。
-
----
 
 ## 🧪 快速上手
 
@@ -43,8 +35,6 @@ assert.Nil(t, result)
 assert.NotNil(t, user, "user should not be nil")
 assert.Panic(t, func () { panic("oops") }, "oops")
 ```
-
----
 
 ### 🔗 链式断言（更语义化）
 
@@ -86,16 +76,12 @@ assert.ThatString(t, got).HasSuffix("lo")
 assert.ThatString(t, got).Contains("ell")
 ```
 
----
-
 ## 💡 设计理念
 
 - 🧠 **语义明确**：`got` 和 `expect` 顺序固定，减少思考负担
 - 🧩 **断言器分工清晰**：`That` / `ThatError` / `ThatString` 分别适用于通用值、错误、字符串
 - 🛡️ **泛型保障类型安全**：提升 IDE 支持和运行稳定性
 - 🧰 **丰富断言方法**：满足从基本值到复杂结构的各种需求
-
----
 
 ## ✅ 示例测试
 
@@ -109,13 +95,9 @@ assert.ThatString(t, user.Name).HasPrefix("admin")
 }
 ```
 
----
-
 ## 📜 License
 
 MIT License —— 免费使用，欢迎贡献！
-
----
 
 ## 🚀 让测试更自然、更清晰、更强大 —— 快使用 `go-assert` 吧！
 
