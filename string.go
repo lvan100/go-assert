@@ -32,11 +32,29 @@ type StringAssertion struct {
 	v string
 }
 
-// String returns an assertion for type string.
-func String(t internal.T, v string) *StringAssertion {
+// ThatString returns an assertion for type string.
+func ThatString(t internal.T, v string) *StringAssertion {
 	return &StringAssertion{
 		t: t,
 		v: v,
+	}
+}
+
+// Equal assertion failed when got and expect are not `deeply equal`.
+func (a *StringAssertion) Equal(expect string, msg ...string) {
+	a.t.Helper()
+	if !reflect.DeepEqual(a.v, expect) {
+		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
+	}
+}
+
+// NotEqual assertion failed when got and expect are `deeply equal`.
+func (a *StringAssertion) NotEqual(expect string, msg ...string) {
+	a.t.Helper()
+	if reflect.DeepEqual(a.v, expect) {
+		str := fmt.Sprintf("got (%T) %v but expect not (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
 	}
 }
 

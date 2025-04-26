@@ -28,7 +28,7 @@ import (
 func fail(t internal.T, str string, msg ...string) {
 	t.Helper()
 	args := append([]string{str}, msg...)
-	t.Error(strings.Join(args, "; "))
+	t.Error(strings.Join(args, ", "))
 }
 
 // True assertion failed when got is false.

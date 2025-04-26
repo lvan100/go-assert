@@ -45,7 +45,7 @@ func TestTrue(t *testing.T) {
 		assert.True(g, false)
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got false but expect true; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got false but expect true, param (index=0)"})
 		assert.True(g, false, "param (index=0)")
 	})
 }
@@ -59,7 +59,7 @@ func TestFalse(t *testing.T) {
 		assert.False(g, true)
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got true but expect false; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got true but expect false, param (index=0)"})
 		assert.False(g, true, "param (index=0)")
 	})
 }
@@ -84,7 +84,7 @@ func TestNil(t *testing.T) {
 		assert.Nil(g, 3)
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got (int) 3 but expect nil; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got (int) 3 but expect nil, param (index=0)"})
 		assert.Nil(g, 3, "param (index=0)")
 	})
 }
@@ -106,7 +106,7 @@ func TestNotNil(t *testing.T) {
 		assert.NotNil(g, nil)
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got nil but expect not nil; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got nil but expect not nil, param (index=0)"})
 		assert.NotNil(g, nil, "param (index=0)")
 	})
 }
@@ -146,7 +146,7 @@ func TestEqual(t *testing.T) {
 		assert.That(g, 0).Equal("0")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got (int) 0 but expect (string) 0; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got (int) 0 but expect (string) 0, param (index=0)"})
 		assert.That(g, 0).Equal("0", "param (index=0)")
 	})
 }
@@ -164,7 +164,7 @@ func TestNotEqual(t *testing.T) {
 		assert.That(g, "0").NotEqual("0")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got (string) 0 but expect not (string) 0; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got (string) 0 but expect not (string) 0, param (index=0)"})
 		assert.That(g, "0").NotEqual("0", "param (index=0)")
 	})
 }
@@ -178,7 +178,7 @@ func TestSame(t *testing.T) {
 		assert.That(g, 0).Same("0")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got (int) 0 but expect (string) 0; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got (int) 0 but expect (string) 0, param (index=0)"})
 		assert.That(g, 0).Same("0", "param (index=0)")
 	})
 }
@@ -192,7 +192,7 @@ func TestNotSame(t *testing.T) {
 		assert.That(g, "0").NotSame("0")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"expect not (string) 0; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"expect not (string) 0, param (index=0)"})
 		assert.That(g, "0").NotSame("0", "param (index=0)")
 	})
 }
@@ -214,7 +214,7 @@ func TestPanic(t *testing.T) {
 		assert.Panic(g, func() { panic("there's no error") }, "an error")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\"; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\", param (index=0)"})
 		assert.Panic(g, func() { panic("there's no error") }, "an error", "param (index=0)")
 	})
 	runCase(t, func(g *internal.MockT) {
@@ -244,7 +244,7 @@ func TestError(t *testing.T) {
 		assert.Error(g, nil, "an error")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"expect not nil error; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"expect not nil error, param (index=0)"})
 		assert.Error(g, nil, "an error", "param (index=0)")
 	})
 	runCase(t, func(g *internal.MockT) {
@@ -252,7 +252,7 @@ func TestError(t *testing.T) {
 		assert.Error(g, errors.New("there's no error"), "an error")
 	})
 	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\"; param (index=0)"})
+		g.EXPECT().Error([]interface{}{"got \"there's no error\" which does not match \"an error\", param (index=0)"})
 		assert.Error(g, errors.New("there's no error"), "an error", "param (index=0)")
 	})
 }
