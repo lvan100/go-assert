@@ -256,6 +256,16 @@ func TestThat_Implements(t *testing.T) {
 	})
 }
 
+type Node struct{}
+
+func (t *Node) Has(key string) (bool, error) {
+	return false, nil
+}
+
+func (t *Node) Contains(key string) (bool, error) {
+	return false, nil
+}
+
 type Tree struct {
 	Keys []string
 }
@@ -274,6 +284,10 @@ func TestThat_Has(t *testing.T) {
 		assert.That(g, 1).Has("1")
 	})
 	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"method 'Has' must return only a bool"})
+		assert.That(g, &Node{}).Has("2")
+	})
+	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"got (*assert_test.Tree) &{[]} not has (string) 2"})
 		assert.That(g, &Tree{}).Has("2")
 	})
@@ -286,6 +300,10 @@ func TestThat_Contains(t *testing.T) {
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"method 'Contains' not found on type int"})
 		assert.That(g, 1).Contains("1")
+	})
+	runCase(t, func(g *internal.MockT) {
+		g.EXPECT().Error([]interface{}{"method 'Contains' must return only a bool"})
+		assert.That(g, &Node{}).Contains("2")
 	})
 	runCase(t, func(g *internal.MockT) {
 		g.EXPECT().Error([]interface{}{"got (*assert_test.Tree) &{[]} not contains (string) 2"})
@@ -330,29 +348,6 @@ func TestThat_NotInSlice(t *testing.T) {
 	})
 	runCase(t, func(g *internal.MockT) {
 		assert.That(g, int64(1)).NotInSlice([]int64{3, 2})
-	})
-}
-
-func TestThat_SubInSlice(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"unsupported got value (int) 1"})
-		assert.That(g, 1).SubInSlice("1")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"unsupported expect value (string) 1"})
-		assert.That(g, []int{1}).SubInSlice("1")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got ([]int) [1] is not sub in ([]string) [1]"})
-		assert.That(g, []int{1}).SubInSlice([]string{"1"})
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"got ([]int) [1] is not sub in ([]int) [3 2]"})
-		assert.That(g, []int{1}).SubInSlice([]int{3, 2})
-	})
-	runCase(t, func(g *internal.MockT) {
-		assert.That(g, []int{1}).SubInSlice([]int{3, 2, 1})
-		assert.That(g, []string{"1"}).SubInSlice([]string{"3", "2", "1"})
 	})
 }
 

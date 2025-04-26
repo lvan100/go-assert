@@ -213,6 +213,11 @@ func (a *ThatAssertion) Has(expect interface{}, msg ...string) {
 		return
 	}
 
+	if m.Type().NumOut() != 1 || m.Type().Out(0).Kind() != reflect.Bool {
+		fail(a.t, "method 'Has' must return only a bool", msg...)
+		return
+	}
+
 	ret := m.Call([]reflect.Value{reflect.ValueOf(expect)})
 	if !ret[0].Bool() {
 		str := fmt.Sprintf("got (%T) %v not has (%T) %v", a.v, a.v, expect, expect)
@@ -229,6 +234,11 @@ func (a *ThatAssertion) Contains(expect interface{}, msg ...string) {
 	if !m.IsValid() {
 		str := fmt.Sprintf("method 'Contains' not found on type %T", a.v)
 		fail(a.t, str, msg...)
+		return
+	}
+
+	if m.Type().NumOut() != 1 || m.Type().Out(0).Kind() != reflect.Bool {
+		fail(a.t, "method 'Contains' must return only a bool", msg...)
 		return
 	}
 
@@ -287,38 +297,6 @@ func (a *ThatAssertion) NotInSlice(expect interface{}, msg ...string) {
 			return
 		}
 	}
-}
-
-// SubInSlice asserts that the assertion’s value appears at least once within the provided slice or array.
-// It fails the test if either the actual value or expected value is not a slice/array,
-// or if no matching element is found.
-func (a *ThatAssertion) SubInSlice(expect interface{}, msg ...string) {
-	a.t.Helper()
-
-	v1 := reflect.ValueOf(a.v)
-	if v1.Kind() != reflect.Array && v1.Kind() != reflect.Slice {
-		str := fmt.Sprintf("unsupported got value (%T) %v", a.v, a.v)
-		fail(a.t, str, msg...)
-		return
-	}
-
-	v2 := reflect.ValueOf(expect)
-	if v2.Kind() != reflect.Array && v2.Kind() != reflect.Slice {
-		str := fmt.Sprintf("unsupported expect value (%T) %v", expect, expect)
-		fail(a.t, str, msg...)
-		return
-	}
-
-	for i := 0; i < v1.Len(); i++ {
-		for j := 0; j < v2.Len(); j++ {
-			if reflect.DeepEqual(v1.Index(i).Interface(), v2.Index(j).Interface()) {
-				return
-			}
-		}
-	}
-
-	str := fmt.Sprintf("got (%T) %v is not sub in (%T) %v", a.v, a.v, expect, expect)
-	fail(a.t, str, msg...)
 }
 
 // InMapKeys asserts that the assertion’s value is one of the keys in the provided map.
