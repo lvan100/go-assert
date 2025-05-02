@@ -40,22 +40,31 @@ func ThatString(t internal.T, v string) *StringAssertion {
 	}
 }
 
-// Equal reports a test failure if the actual string is not equal to the expected string.
-func (a *StringAssertion) Equal(expect string, msg ...string) {
+// Len reports a test failure if the actual string's length is not equal to the expected length.
+func (a *StringAssertion) Len(length int, msg ...string) *StringAssertion {
+	a.t.Helper()
+	if len(a.v) != length {
+		fail(a.t, fmt.Sprintf("got length %d but expect %d", len(a.v), length), msg...)
+	}
+	return a
+}
+
+func (a *StringAssertion) Equal(expect string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v != expect {
 		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
 	}
+	return a
 }
 
-// NotEqual reports a test failure if the actual string is equal to the given string.
-func (a *StringAssertion) NotEqual(expect string, msg ...string) {
+func (a *StringAssertion) NotEqual(expect string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v == expect {
 		str := fmt.Sprintf("got (%T) %v but expect not (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
 	}
+	return a
 }
 
 // JsonEqual unmarshals both the actual and expected JSON strings into generic interfaces,
@@ -104,29 +113,142 @@ func (a *StringAssertion) EqualFold(s string, msg ...string) {
 	}
 }
 
-// HasPrefix fails the test if the actual string does not start with the specified prefix.
-func (a *StringAssertion) HasPrefix(prefix string, msg ...string) *StringAssertion {
+// IsEmpty reports a test failure if the actual string is not empty.
+func (a *StringAssertion) IsEmpty(msg ...string) *StringAssertion {
 	a.t.Helper()
-	if !strings.HasPrefix(a.v, prefix) {
-		fail(a.t, fmt.Sprintf("'%s' doesn't have prefix '%s'", a.v, prefix), msg...)
+	if a.v != "" {
+		fail(a.t, fmt.Sprintf("got %q but expect empty string", a.v), msg...)
 	}
 	return a
 }
 
-// HasSuffix fails the test if the actual string does not end with the specified suffix.
-func (a *StringAssertion) HasSuffix(suffix string, msg ...string) *StringAssertion {
+// IsNotEmpty reports a test failure if the actual string is empty.
+func (a *StringAssertion) IsNotEmpty(msg ...string) *StringAssertion {
 	a.t.Helper()
-	if !strings.HasSuffix(a.v, suffix) {
-		fail(a.t, fmt.Sprintf("'%s' doesn't have suffix '%s'", a.v, suffix), msg...)
+	if a.v == "" {
+		fail(a.t, "got empty string but expect non-empty string", msg...)
 	}
 	return a
 }
 
-// Contains fails the test if the actual string does not contain the specified substring.
-func (a *StringAssertion) Contains(substr string, msg ...string) *StringAssertion {
+// IsBlank reports a test failure if the actual string is not blank (i.e., contains non-whitespace characters).
+func (a *StringAssertion) IsBlank(msg ...string) *StringAssertion {
 	a.t.Helper()
-	if !strings.Contains(a.v, substr) {
-		fail(a.t, fmt.Sprintf("'%s' doesn't contain substr '%s'", a.v, substr), msg...)
+	if strings.TrimSpace(a.v) != "" {
+		fail(a.t, fmt.Sprintf("got %q but expect blank string", a.v), msg...)
+	}
+	return a
+}
+
+// IsNotBlank reports a test failure if the actual string is blank (i.e., empty or contains only whitespace characters).
+func (a *StringAssertion) IsNotBlank(msg ...string) *StringAssertion {
+	a.t.Helper()
+	if strings.TrimSpace(a.v) == "" {
+		fail(a.t, "got blank string but expect non-blank string", msg...)
+	}
+	return a
+}
+
+// IsLowerCase reports a test failure if the actual string contains any uppercase characters.
+func (a *StringAssertion) IsLowerCase(msg ...string) *StringAssertion {
+	a.t.Helper()
+	if a.v != strings.ToLower(a.v) {
+		fail(a.t, fmt.Sprintf("'%s' contains uppercase characters", a.v), msg...)
+	}
+	return a
+}
+
+// IsUpperCase reports a test failure if the actual string contains any lowercase characters.
+func (a *StringAssertion) IsUpperCase(msg ...string) *StringAssertion {
+	a.t.Helper()
+	if a.v != strings.ToUpper(a.v) {
+		fail(a.t, fmt.Sprintf("'%s' contains lowercase characters", a.v), msg...)
+	}
+	return a
+}
+
+// IsNumeric reports a test failure if the actual string contains any non-numeric characters.
+func (a *StringAssertion) IsNumeric(msg ...string) *StringAssertion {
+	a.t.Helper()
+	for _, r := range a.v {
+		if r < '0' || r > '9' {
+			fail(a.t, fmt.Sprintf("'%s' contains non-numeric characters", a.v), msg...)
+			break
+		}
+	}
+	return a
+}
+
+// IsAlpha reports a test failure if the actual string contains any non-alphabetic characters.
+func (a *StringAssertion) IsAlpha(msg ...string) *StringAssertion {
+	a.t.Helper()
+	for _, r := range a.v {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
+			fail(a.t, fmt.Sprintf("'%s' contains non-alphabetic characters", a.v), msg...)
+			break
+		}
+	}
+	return a
+}
+
+// IsAlphaNumeric reports a test failure if the actual string contains any non-alphanumeric characters.
+func (a *StringAssertion) IsAlphaNumeric(msg ...string) *StringAssertion {
+	a.t.Helper()
+	for _, r := range a.v {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
+			fail(a.t, fmt.Sprintf("'%s' contains non-alphanumeric characters", a.v), msg...)
+			break
+		}
+	}
+	return a
+}
+
+// IsEmail reports a test failure if the actual string is not a valid email address.
+func (a *StringAssertion) IsEmail(msg ...string) *StringAssertion {
+	a.t.Helper()
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	if ok, err := regexp.MatchString(emailRegex, a.v); err != nil || !ok {
+		fail(a.t, fmt.Sprintf("'%s' is not a valid email address", a.v), msg...)
+	}
+	return a
+}
+
+// IsURL reports a test failure if the actual string is not a valid URL.
+func (a *StringAssertion) IsURL(msg ...string) *StringAssertion {
+	a.t.Helper()
+	urlRegex := `^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$`
+	if ok, err := regexp.MatchString(urlRegex, a.v); err != nil || !ok {
+		fail(a.t, fmt.Sprintf("'%s' is not a valid URL", a.v), msg...)
+	}
+	return a
+}
+
+// IsIP reports a test failure if the actual string is not a valid IP address.
+func (a *StringAssertion) IsIP(msg ...string) *StringAssertion {
+	a.t.Helper()
+	ipRegex := `^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`
+	if ok, err := regexp.MatchString(ipRegex, a.v); err != nil || !ok {
+		fail(a.t, fmt.Sprintf("'%s' is not a valid IP address", a.v), msg...)
+	}
+	return a
+}
+
+// IsHex reports a test failure if the actual string is not a valid hexadecimal number.
+func (a *StringAssertion) IsHex(msg ...string) *StringAssertion {
+	a.t.Helper()
+	hexRegex := `^[0-9a-fA-F]+$`
+	if ok, err := regexp.MatchString(hexRegex, a.v); err != nil || !ok {
+		fail(a.t, fmt.Sprintf("'%s' is not a valid hexadecimal number", a.v), msg...)
+	}
+	return a
+}
+
+// IsBase64 reports a test failure if the actual string is not a valid Base64 encoded string.
+func (a *StringAssertion) IsBase64(msg ...string) *StringAssertion {
+	a.t.Helper()
+	base64Regex := `^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`
+	if ok, err := regexp.MatchString(base64Regex, a.v); err != nil || !ok {
+		fail(a.t, fmt.Sprintf("'%s' is not a valid Base64 encoded string", a.v), msg...)
 	}
 	return a
 }

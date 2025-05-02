@@ -345,3 +345,43 @@ func (a *ThatAssertion) InMapValues(expect interface{}, msg ...string) {
 	str := fmt.Sprintf("got (%T) %v is not in values of (%T) %v", a.v, a.v, expect, expect)
 	fail(a.t, str, msg...)
 }
+
+// IsZero asserts that the wrapped value v is the zero value for its type.
+// It reports an error if the value is not zero.
+func (a *ThatAssertion) IsZero(msg ...string) {
+	a.t.Helper()
+	if !reflect.ValueOf(a.v).IsZero() {
+		str := fmt.Sprintf("got (%T) %v but expect zero value", a.v, a.v)
+		fail(a.t, str, msg...)
+	}
+}
+
+// NotZero asserts that the wrapped value v is not the zero value for its type.
+// It reports an error if the value is zero.
+func (a *ThatAssertion) NotZero(msg ...string) {
+	a.t.Helper()
+	if reflect.ValueOf(a.v).IsZero() {
+		str := fmt.Sprintf("got zero value but expect not zero for type %T", a.v)
+		fail(a.t, str, msg...)
+	}
+}
+
+// IsType asserts that the wrapped value v is of the same type as expect.
+// It reports an error if the types are not the same.
+func (a *ThatAssertion) IsType(expect interface{}, msg ...string) {
+	a.t.Helper()
+	if reflect.TypeOf(a.v) != reflect.TypeOf(expect) {
+		str := fmt.Sprintf("got type (%s) but expect type (%s)", reflect.TypeOf(a.v), reflect.TypeOf(expect))
+		fail(a.t, str, msg...)
+	}
+}
+
+// IsNotType asserts that the wrapped value v is not of the same type as expect.
+// It reports an error if the types are the same.
+func (a *ThatAssertion) IsNotType(expect interface{}, msg ...string) {
+	a.t.Helper()
+	if reflect.TypeOf(a.v) == reflect.TypeOf(expect) {
+		str := fmt.Sprintf("got type (%s) but expect not type (%s)", reflect.TypeOf(a.v), reflect.TypeOf(expect))
+		fail(a.t, str, msg...)
+	}
+}
