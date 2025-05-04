@@ -40,28 +40,31 @@ func ThatString(t internal.T, v string) *StringAssertion {
 	}
 }
 
-// Len reports a test failure if the actual string's length is not equal to the expected length.
-func (a *StringAssertion) Len(length int, msg ...string) *StringAssertion {
+// Length reports a test failure if the actual string's length is not equal to the expected length.
+func (a *StringAssertion) Length(length int, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if len(a.v) != length {
-		fail(a.t, fmt.Sprintf("got length %d but expect %d", len(a.v), length), msg...)
-	}
-	return a
-}
-
-func (a *StringAssertion) Equal(expect string, msg ...string) *StringAssertion {
-	a.t.Helper()
-	if a.v != expect {
-		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		str := fmt.Sprintf("length mismatch, got (%T) %v with length %d but expect length %d", a.v, a.v, len(a.v), length)
 		fail(a.t, str, msg...)
 	}
 	return a
 }
 
+// Equal reports a test failure if the actual string is not equal to the expected string.
+func (a *StringAssertion) Equal(expect string, msg ...string) *StringAssertion {
+	a.t.Helper()
+	if a.v != expect {
+		str := fmt.Sprintf("strings are not equal, got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
+	}
+	return a
+}
+
+// NotEqual reports a test failure if the actual string is equal to the given string.
 func (a *StringAssertion) NotEqual(expect string, msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v == expect {
-		str := fmt.Sprintf("got (%T) %v but expect not (%T) %v", a.v, a.v, expect, expect)
+		str := fmt.Sprintf("strings are equal, got (%T) %v but expect not", a.v, a.v)
 		fail(a.t, str, msg...)
 	}
 	return a
@@ -74,34 +77,29 @@ func (a *StringAssertion) JsonEqual(expect string, msg ...string) {
 	a.t.Helper()
 	var gotJson interface{}
 	if err := json.Unmarshal([]byte(a.v), &gotJson); err != nil {
-		fail(a.t, err.Error(), msg...)
+		str := fmt.Sprintf("invalid JSON in got value, got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
 		return
 	}
 	var expectJson interface{}
 	if err := json.Unmarshal([]byte(expect), &expectJson); err != nil {
-		fail(a.t, err.Error(), msg...)
+		str := fmt.Sprintf("invalid JSON in expect value, got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		fail(a.t, str, msg...)
 		return
 	}
 	if !reflect.DeepEqual(gotJson, expectJson) {
-		str := fmt.Sprintf("got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
+		str := fmt.Sprintf("JSON structures are not equal, got (%T) %v but expect (%T) %v", a.v, a.v, expect, expect)
 		fail(a.t, str, msg...)
-	}
-}
-
-func matches(t internal.T, got string, expr string, msg ...string) {
-	t.Helper()
-	if ok, err := regexp.MatchString(expr, got); err != nil {
-		fail(t, "invalid pattern", msg...)
-	} else if !ok {
-		str := fmt.Sprintf("got %q which does not match %q", got, expr)
-		fail(t, str, msg...)
 	}
 }
 
 // Matches reports a test failure if the actual string does not match the given regular expression.
 func (a *StringAssertion) Matches(expr string, msg ...string) {
 	a.t.Helper()
-	matches(a.t, a.v, expr, msg...)
+	if ok, err := regexp.MatchString(expr, a.v); err != nil || !ok {
+		str := fmt.Sprintf("string does not match the pattern, got (%T) %v but expect to match regex %q", a.v, a.v, expr)
+		fail(a.t, str, msg...)
+	}
 }
 
 // EqualFold reports a test failure if the actual string and the given string
@@ -109,15 +107,47 @@ func (a *StringAssertion) Matches(expr string, msg ...string) {
 func (a *StringAssertion) EqualFold(s string, msg ...string) {
 	a.t.Helper()
 	if !strings.EqualFold(a.v, s) {
-		fail(a.t, fmt.Sprintf("'%s' doesn't equal fold to '%s'", a.v, s), msg...)
+		str := fmt.Sprintf("strings are not equal under case-folding, got (%T) %v but expect (%T) %v", a.v, a.v, s, s)
+		fail(a.t, str, msg...)
 	}
+}
+
+// HasPrefix fails the test if the actual string does not start with the specified prefix.
+func (a *StringAssertion) HasPrefix(prefix string, msg ...string) *StringAssertion {
+	a.t.Helper()
+	if !strings.HasPrefix(a.v, prefix) {
+		str := fmt.Sprintf("string does not start with the specified prefix, got (%T) %v but expect to have prefix %q", a.v, a.v, prefix)
+		fail(a.t, str, msg...)
+	}
+	return a
+}
+
+// HasSuffix fails the test if the actual string does not end with the specified suffix.
+func (a *StringAssertion) HasSuffix(suffix string, msg ...string) *StringAssertion {
+	a.t.Helper()
+	if !strings.HasSuffix(a.v, suffix) {
+		str := fmt.Sprintf("string does not end with the specified suffix, got (%T) %v but expect to have suffix %q", a.v, a.v, suffix)
+		fail(a.t, str, msg...)
+	}
+	return a
+}
+
+// Contains fails the test if the actual string does not contain the specified substring.
+func (a *StringAssertion) Contains(substr string, msg ...string) *StringAssertion {
+	a.t.Helper()
+	if !strings.Contains(a.v, substr) {
+		str := fmt.Sprintf("string does not contain the specified substring, got (%T) %v but expect to contain substring %q", a.v, a.v, substr)
+		fail(a.t, str, msg...)
+	}
+	return a
 }
 
 // IsEmpty reports a test failure if the actual string is not empty.
 func (a *StringAssertion) IsEmpty(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v != "" {
-		fail(a.t, fmt.Sprintf("got %q but expect empty string", a.v), msg...)
+		str := fmt.Sprintf("string is not empty, got (%T) %v but expect empty string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -126,7 +156,8 @@ func (a *StringAssertion) IsEmpty(msg ...string) *StringAssertion {
 func (a *StringAssertion) IsNotEmpty(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v == "" {
-		fail(a.t, "got empty string but expect non-empty string", msg...)
+		str := fmt.Sprintf("string is empty, got (%T) %v but expect non-empty string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -135,7 +166,8 @@ func (a *StringAssertion) IsNotEmpty(msg ...string) *StringAssertion {
 func (a *StringAssertion) IsBlank(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if strings.TrimSpace(a.v) != "" {
-		fail(a.t, fmt.Sprintf("got %q but expect blank string", a.v), msg...)
+		str := fmt.Sprintf("string contains non-whitespace characters, got (%T) %v but expect blank string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -144,7 +176,8 @@ func (a *StringAssertion) IsBlank(msg ...string) *StringAssertion {
 func (a *StringAssertion) IsNotBlank(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if strings.TrimSpace(a.v) == "" {
-		fail(a.t, "got blank string but expect non-blank string", msg...)
+		str := fmt.Sprintf("string is blank, got (%T) %v but expect non-blank string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -153,7 +186,8 @@ func (a *StringAssertion) IsNotBlank(msg ...string) *StringAssertion {
 func (a *StringAssertion) IsLowerCase(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v != strings.ToLower(a.v) {
-		fail(a.t, fmt.Sprintf("'%s' contains uppercase characters", a.v), msg...)
+		str := fmt.Sprintf("string contains uppercase characters, got (%T) %v but expect lowercase string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -162,7 +196,8 @@ func (a *StringAssertion) IsLowerCase(msg ...string) *StringAssertion {
 func (a *StringAssertion) IsUpperCase(msg ...string) *StringAssertion {
 	a.t.Helper()
 	if a.v != strings.ToUpper(a.v) {
-		fail(a.t, fmt.Sprintf("'%s' contains lowercase characters", a.v), msg...)
+		str := fmt.Sprintf("string contains lowercase characters, got (%T) %v but expect uppercase string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -172,7 +207,8 @@ func (a *StringAssertion) IsNumeric(msg ...string) *StringAssertion {
 	a.t.Helper()
 	for _, r := range a.v {
 		if r < '0' || r > '9' {
-			fail(a.t, fmt.Sprintf("'%s' contains non-numeric characters", a.v), msg...)
+			str := fmt.Sprintf("string contains non-numeric characters, got (%T) %v but expect numeric string", a.v, a.v)
+			fail(a.t, str, msg...)
 			break
 		}
 	}
@@ -184,7 +220,8 @@ func (a *StringAssertion) IsAlpha(msg ...string) *StringAssertion {
 	a.t.Helper()
 	for _, r := range a.v {
 		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
-			fail(a.t, fmt.Sprintf("'%s' contains non-alphabetic characters", a.v), msg...)
+			str := fmt.Sprintf("string contains non-alphabetic characters, got (%T) %v but expect alphabetic string", a.v, a.v)
+			fail(a.t, str, msg...)
 			break
 		}
 	}
@@ -196,7 +233,8 @@ func (a *StringAssertion) IsAlphaNumeric(msg ...string) *StringAssertion {
 	a.t.Helper()
 	for _, r := range a.v {
 		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
-			fail(a.t, fmt.Sprintf("'%s' contains non-alphanumeric characters", a.v), msg...)
+			str := fmt.Sprintf("string contains non-alphanumeric characters, got (%T) %v but expect alphanumeric string", a.v, a.v)
+			fail(a.t, str, msg...)
 			break
 		}
 	}
@@ -208,7 +246,8 @@ func (a *StringAssertion) IsEmail(msg ...string) *StringAssertion {
 	a.t.Helper()
 	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	if ok, err := regexp.MatchString(emailRegex, a.v); err != nil || !ok {
-		fail(a.t, fmt.Sprintf("'%s' is not a valid email address", a.v), msg...)
+		str := fmt.Sprintf("string is not a valid email, got (%T) %v but expect valid email address", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -218,7 +257,8 @@ func (a *StringAssertion) IsURL(msg ...string) *StringAssertion {
 	a.t.Helper()
 	urlRegex := `^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$`
 	if ok, err := regexp.MatchString(urlRegex, a.v); err != nil || !ok {
-		fail(a.t, fmt.Sprintf("'%s' is not a valid URL", a.v), msg...)
+		str := fmt.Sprintf("string is not a valid URL, got (%T) %v but expect valid URL", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -228,7 +268,8 @@ func (a *StringAssertion) IsIP(msg ...string) *StringAssertion {
 	a.t.Helper()
 	ipRegex := `^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`
 	if ok, err := regexp.MatchString(ipRegex, a.v); err != nil || !ok {
-		fail(a.t, fmt.Sprintf("'%s' is not a valid IP address", a.v), msg...)
+		str := fmt.Sprintf("string is not a valid IP, got (%T) %v but expect valid IP address", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -238,7 +279,8 @@ func (a *StringAssertion) IsHex(msg ...string) *StringAssertion {
 	a.t.Helper()
 	hexRegex := `^[0-9a-fA-F]+$`
 	if ok, err := regexp.MatchString(hexRegex, a.v); err != nil || !ok {
-		fail(a.t, fmt.Sprintf("'%s' is not a valid hexadecimal number", a.v), msg...)
+		str := fmt.Sprintf("string is not a valid hexadecimal, got (%T) %v but expect valid hexadecimal number", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }
@@ -248,7 +290,8 @@ func (a *StringAssertion) IsBase64(msg ...string) *StringAssertion {
 	a.t.Helper()
 	base64Regex := `^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`
 	if ok, err := regexp.MatchString(base64Regex, a.v); err != nil || !ok {
-		fail(a.t, fmt.Sprintf("'%s' is not a valid Base64 encoded string", a.v), msg...)
+		str := fmt.Sprintf("string is not a valid Base64, got (%T) %v but expect valid Base64 encoded string", a.v, a.v)
+		fail(a.t, str, msg...)
 	}
 	return a
 }

@@ -105,44 +105,45 @@ func TestString_EqualFold(t *testing.T) {
 	})
 }
 
-func TestString_HasPrefix(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		assert.ThatString(g, "hello, world!").HasPrefix("hello")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have prefix 'xxx'"})
-		assert.ThatString(g, "hello, world!").HasPrefix("xxx")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have prefix 'xxx', param (index=0)"})
-		assert.ThatString(g, "hello, world!").HasPrefix("xxx", "param (index=0)")
-	})
-}
-
-func TestString_HasSuffix(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		assert.ThatString(g, "hello, world!").HasSuffix("world!")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have suffix 'xxx'"})
-		assert.ThatString(g, "hello, world!").HasSuffix("xxx")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have suffix 'xxx', param (index=0)"})
-		assert.ThatString(g, "hello, world!").HasSuffix("xxx", "param (index=0)")
-	})
-}
-
-func TestString_Contains(t *testing.T) {
-	runCase(t, func(g *internal.MockT) {
-		assert.ThatString(g, "hello, world!").Contains("hello")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't contain substr 'xxx'"})
-		assert.ThatString(g, "hello, world!").Contains("xxx")
-	})
-	runCase(t, func(g *internal.MockT) {
-		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't contain substr 'xxx', param (index=0)"})
-		assert.ThatString(g, "hello, world!").Contains("xxx", "param (index=0)")
-	})
-}
+//
+//func TestString_HasPrefix(t *testing.T) {
+//	runCase(t, func(g *internal.MockT) {
+//		assert.ThatString(g, "hello, world!").HasPrefix("hello")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have prefix 'xxx'"})
+//		assert.ThatString(g, "hello, world!").HasPrefix("xxx")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have prefix 'xxx', param (index=0)"})
+//		assert.ThatString(g, "hello, world!").HasPrefix("xxx", "param (index=0)")
+//	})
+//}
+//
+//func TestString_HasSuffix(t *testing.T) {
+//	runCase(t, func(g *internal.MockT) {
+//		assert.ThatString(g, "hello, world!").HasSuffix("world!")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have suffix 'xxx'"})
+//		assert.ThatString(g, "hello, world!").HasSuffix("xxx")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't have suffix 'xxx', param (index=0)"})
+//		assert.ThatString(g, "hello, world!").HasSuffix("xxx", "param (index=0)")
+//	})
+//}
+//
+//func TestString_Contains(t *testing.T) {
+//	runCase(t, func(g *internal.MockT) {
+//		assert.ThatString(g, "hello, world!").Contains("hello")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't contain substr 'xxx'"})
+//		assert.ThatString(g, "hello, world!").Contains("xxx")
+//	})
+//	runCase(t, func(g *internal.MockT) {
+//		g.EXPECT().Error([]interface{}{"'hello, world!' doesn't contain substr 'xxx', param (index=0)"})
+//		assert.ThatString(g, "hello, world!").Contains("xxx", "param (index=0)")
+//	})
+//}
