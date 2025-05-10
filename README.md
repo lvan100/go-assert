@@ -68,7 +68,7 @@ assert.ThatError(t, err).Matches("timeout")
 ```go
 assert.ThatString(t, got).Equal("hello")
 assert.ThatString(t, got).NotEqual("bye")
-assert.ThatString(t, got).JsonEqual(`{"a":1}`)
+assert.ThatString(t, got).JSONEqual(`{"a":1}`)
 assert.ThatString(t, got).Matches("^he.*")
 assert.ThatString(t, got).EqualFold("Hello")
 assert.ThatString(t, got).HasPrefix("he")

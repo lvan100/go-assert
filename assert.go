@@ -21,6 +21,7 @@ package assert
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/lvan100/go-assert/internal"
@@ -28,8 +29,10 @@ import (
 
 func fail(t internal.T, str string, msg ...string) {
 	t.Helper()
-	args := append([]string{str}, msg...)
-	t.Error(strings.Join(args, ", "))
+	if len(msg) > 0 {
+		str += "\nmessage: " + strings.Join(msg, ", ")
+	}
+	t.Error(str)
 }
 
 // True asserts that got is true. It reports an error if the value is false.
@@ -93,6 +96,16 @@ func Panic(t internal.T, fn func(), expr string, msg ...string) {
 		fail(t, "did not panic", msg...)
 	} else {
 		matches(t, str, expr, msg...)
+	}
+}
+
+func matches(t internal.T, got string, expr string, msg ...string) {
+	t.Helper()
+	if ok, err := regexp.MatchString(expr, got); err != nil {
+		fail(t, "invalid pattern", msg...)
+	} else if !ok {
+		str := fmt.Sprintf("got %q which does not match %q", got, expr)
+		fail(t, str, msg...)
 	}
 }
 
